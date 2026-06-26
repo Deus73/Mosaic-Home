@@ -1,0 +1,18 @@
+# Android / Gradle
+.gradle/
+build/
+app/build/
+local.properties
+
+# Generated workspace artifacts
+work/
+*.idsig
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
