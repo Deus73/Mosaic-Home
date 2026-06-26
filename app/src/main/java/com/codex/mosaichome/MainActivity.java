@@ -249,7 +249,7 @@ public class MainActivity extends Activity {
             addAction("Profile", "profile", 1, 1, 0, Color.rgb(132, 91, 178));
             addAction("Settings", "group:Settings", 1, 1, 0, Color.rgb(94, 110, 130));
             addAction("Continue watching", "live:continue", 3, 1, 0, Color.rgb(72, 143, 224));
-            addAction("Uitschieters", "group:Uitschieters", 2, 1, 0, Color.rgb(221, 73, 73));
+            addAction("Spotlight", "group:Spotlight", 2, 1, 0, Color.rgb(221, 73, 73));
             addAction("Top picks", "group:Android TV", 2, 1, 0, Color.rgb(235, 126, 32));
             addAction("Live", "group:Live TV / IPTV", 1, 1, 0, Color.rgb(221, 73, 73));
             addAction("Apps", "drawer", 1, 1, 0, Color.rgb(238, 194, 62));
@@ -261,7 +261,7 @@ public class MainActivity extends Activity {
         } else if ("Android TV standard".equals(preset)) {
             addBaseTiles();
             addAction("Continue", "live:continue", 2, 1, 0, Color.rgb(72, 143, 224));
-            addAction("Uitschieters", "group:Uitschieters", 2, 1, 0, Color.rgb(221, 73, 73));
+            addAction("Spotlight", "group:Spotlight", 2, 1, 0, Color.rgb(221, 73, 73));
             addSpotlightApps(0, 6);
             addApps("Android TV", 0, 12);
             addApps("Live TV / IPTV", 0, 8);
@@ -423,7 +423,7 @@ public class MainActivity extends Activity {
     }
 
     private int countVisible(String category) {
-        if ("Uitschieters".equals(category)) return spotlightApps().size();
+        if ("Spotlight".equals(category)) return spotlightApps().size();
         int count = 0;
         for (AppEntry app : apps) if (!app.hidden && category.equals(app.category)) count++;
         return count;
@@ -603,9 +603,9 @@ public class MainActivity extends Activity {
 
     private void showGroup(String category) {
         LinearLayout panel = panel(category);
-        List<AppEntry> groupApps = "Uitschieters".equals(category) ? spotlightApps() : apps;
+        List<AppEntry> groupApps = "Spotlight".equals(category) ? spotlightApps() : apps;
         for (AppEntry app : groupApps) {
-            if (!app.hidden && ("Uitschieters".equals(category) || category.equals(app.category))) addAppRow(panel, app, () -> launch(appTile(app)));
+            if (!app.hidden && ("Spotlight".equals(category) || category.equals(app.category))) addAppRow(panel, app, () -> launch(appTile(app)));
         }
         showPanel(panel);
     }
