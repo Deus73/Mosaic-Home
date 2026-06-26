@@ -249,9 +249,11 @@ public class MainActivity extends Activity {
             addAction("Profile", "profile", 1, 1, 0, Color.rgb(132, 91, 178));
             addAction("Settings", "group:Settings", 1, 1, 0, Color.rgb(94, 110, 130));
             addAction("Continue watching", "live:continue", 3, 1, 0, Color.rgb(72, 143, 224));
+            addAction("Uitschieters", "group:Uitschieters", 2, 1, 0, Color.rgb(221, 73, 73));
             addAction("Top picks", "group:Android TV", 2, 1, 0, Color.rgb(235, 126, 32));
             addAction("Live", "group:Live TV / IPTV", 1, 1, 0, Color.rgb(221, 73, 73));
             addAction("Apps", "drawer", 1, 1, 0, Color.rgb(238, 194, 62));
+            addSpotlightApps(0, 6);
             addApps("Android TV", 0, 10);
             addApps("Live TV / IPTV", 0, 6);
             addApps("TV Tools", 1, 8);
@@ -259,6 +261,8 @@ public class MainActivity extends Activity {
         } else if ("Android TV standard".equals(preset)) {
             addBaseTiles();
             addAction("Continue", "live:continue", 2, 1, 0, Color.rgb(72, 143, 224));
+            addAction("Uitschieters", "group:Uitschieters", 2, 1, 0, Color.rgb(221, 73, 73));
+            addSpotlightApps(0, 6);
             addApps("Android TV", 0, 12);
             addApps("Live TV / IPTV", 0, 8);
             addApps("TV Tools", 0, 8);
@@ -346,10 +350,25 @@ public class MainActivity extends Activity {
         int count = 0;
         for (AppEntry app : apps) {
             if (app.hidden || !category.equals(app.category)) continue;
+            if (containsTile(app) && isSpotlightApp(app)) continue;
             Tile tile = appTile(app);
             tile.page = page;
             tile.w = shouldBeWide(app) ? 2 : 1;
             tile.h = shouldBeTall(app) ? 2 : 1;
+            tiles.add(tile);
+            if (++count >= limit) return;
+        }
+    }
+
+    private void addSpotlightApps(int page, int limit) {
+        int count = 0;
+        for (AppEntry app : spotlightApps()) {
+            if (containsTile(app)) continue;
+            Tile tile = appTile(app);
+            tile.page = page;
+            tile.w = 2;
+            tile.h = shouldBeTall(app) ? 2 : 1;
+            tile.spotlight = true;
             tiles.add(tile);
             if (++count >= limit) return;
         }
@@ -375,14 +394,36 @@ public class MainActivity extends Activity {
     }
 
     private boolean shouldBeWide(AppEntry app) {
-        return "Entertainment".equals(app.category) || "Productivity".equals(app.category) || app.usage > 6;
+        return isSpotlightApp(app) || "Entertainment".equals(app.category) || "Productivity".equals(app.category) || app.usage > 6;
     }
 
     private boolean shouldBeTall(AppEntry app) {
-        return "TV".equals(app.category) || "Media".equals(app.category);
+        return isSpotlightApp(app) || "TV".equals(app.category) || "Media".equals(app.category);
+    }
+
+    private ArrayList<AppEntry> spotlightApps() {
+        ArrayList<AppEntry> result = new ArrayList<>();
+        for (AppEntry app : apps) if (!app.hidden && isSpotlightApp(app)) result.add(app);
+        Collections.sort(result, (a, b) -> Integer.compare(spotlightScore(b), spotlightScore(a)));
+        return result;
+    }
+
+    private boolean isSpotlightApp(AppEntry app) {
+        return spotlightScore(app) >= 70;
+    }
+
+    private int spotlightScore(AppEntry app) {
+        String hay = (app.label + " " + app.packageName + " " + app.category).toLowerCase(Locale.US);
+        int score = app.usage * 10 + latestBadges.getOrDefault(app.packageName, 0) * 20;
+        if ("Live TV / IPTV".equals(app.category)) score += 75;
+        if ("Android TV".equals(app.category) || "Entertainment".equals(app.category)) score += 35;
+        if (has(hay, "kpn", "kpnandroidtv", "iptv", "m3u", "tivimate", "live tv", "livetv", "zapping", "channels")) score += 95;
+        if (has(hay, "netflix", "youtube", "prime", "disney", "plex", "kodi", "stream")) score += 45;
+        return score;
     }
 
     private int countVisible(String category) {
+        if ("Uitschieters".equals(category)) return spotlightApps().size();
         int count = 0;
         for (AppEntry app : apps) if (!app.hidden && category.equals(app.category)) count++;
         return count;
@@ -414,6 +455,10 @@ public class MainActivity extends Activity {
         for (AppEntry app : apps) installed.add(app.key());
         for (Tile tile : tiles) {
             if ("app".equals(tile.type)) tile.missing = !installed.contains(tile.packageName + "/" + tile.className);
+            if ("app".equals(tile.type) && !tile.missing) {
+                AppEntry app = findApp(tile);
+                tile.spotlight = app != null && isSpotlightApp(app);
+            }
         }
     }
 
@@ -558,8 +603,9 @@ public class MainActivity extends Activity {
 
     private void showGroup(String category) {
         LinearLayout panel = panel(category);
-        for (AppEntry app : apps) {
-            if (!app.hidden && category.equals(app.category)) addAppRow(panel, app, () -> launch(appTile(app)));
+        List<AppEntry> groupApps = "Uitschieters".equals(category) ? spotlightApps() : apps;
+        for (AppEntry app : groupApps) {
+            if (!app.hidden && ("Uitschieters".equals(category) || category.equals(app.category))) addAppRow(panel, app, () -> launch(appTile(app)));
         }
         showPanel(panel);
     }
@@ -1044,6 +1090,7 @@ public class MainActivity extends Activity {
                 }
                 if ("app".equals(tile.type)) drawAppIcon(canvas, tile, left, top, right, bottom, i == hoverIndex);
                 if (tile.action != null && tile.action.startsWith("live:")) drawLiveTileText(canvas, tile, left, top, right, bottom);
+                if (tile.spotlight) drawSpotlightChip(canvas, left, top, right);
                 paint.setColor(Color.WHITE);
                 paint.setTextSize(isTvLike() ? dp(22) : (tile.w > 1 ? dp(18) : dp(14)));
                 paint.setFakeBoldText(true);
@@ -1104,6 +1151,22 @@ public class MainActivity extends Activity {
             app.icon.setAlpha(hover ? 255 : 232);
             app.icon.draw(canvas);
             app.icon.setAlpha(255);
+        }
+
+        private void drawSpotlightChip(Canvas canvas, int left, int top, int right) {
+            String text = "UIT";
+            paint.setFakeBoldText(true);
+            paint.setTextSize(isTvLike() ? dp(15) : dp(12));
+            float width = paint.measureText(text) + dp(18);
+            rect.set(right - width - dp(10), top + dp(10), right - dp(10), top + dp(34));
+            paint.setColor(Color.argb(230, 255, 255, 255));
+            paint.setStyle(Paint.Style.FILL);
+            canvas.drawRoundRect(rect, dp(12), dp(12), paint);
+            paint.setColor(Color.rgb(15, 18, 24));
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText(text, rect.centerX(), top + dp(28), paint);
+            paint.setTextAlign(Paint.Align.LEFT);
+            paint.setFakeBoldText(false);
         }
 
         private void drawLabel(Canvas canvas, String label, float x, float baseline, float maxRight) {
@@ -1319,6 +1382,7 @@ public class MainActivity extends Activity {
         int h = 1;
         int page = 0;
         boolean missing;
+        boolean spotlight;
 
         JSONObject toJson() throws JSONException {
             JSONObject obj = new JSONObject();
@@ -1331,6 +1395,7 @@ public class MainActivity extends Activity {
             obj.put("w", w);
             obj.put("h", h);
             obj.put("page", page);
+            obj.put("spotlight", spotlight);
             return obj;
         }
 
@@ -1345,6 +1410,7 @@ public class MainActivity extends Activity {
             tile.w = obj.optInt("w", 1);
             tile.h = obj.optInt("h", 1);
             tile.page = obj.optInt("page", 0);
+            tile.spotlight = obj.optBoolean("spotlight", false);
             return tile;
         }
     }

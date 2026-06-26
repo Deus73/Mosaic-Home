@@ -18,6 +18,10 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 
 ![Google TV style home](outputs/screenshots/mosaic-monitor-logo-home-1920x1080.png)
 
+### KPN / IPTV Uitschieters
+
+![KPN IPTV spotlight tiles](outputs/screenshots/mosaic-spotlight-kpn-1920x1080.png)
+
 ### App Drawer With Logo Buttons
 
 ![Apps with original icon buttons](outputs/screenshots/mosaic-monitor-logo-apps-1920x1080.png)
@@ -39,6 +43,7 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 - Native Android launcher with HOME, LAUNCHER, and LEANBACK launcher support.
 - Google TV style default preset with For You, Continue Watching, Live, Apps, and Settings rows.
 - Automatic app grouping for Android TV, Live TV / IPTV, Entertainment, TV Tools, Music, Games, Settings, Communication, Productivity, Media, Browser, Tools, Shopping, System, and Other.
+- Automatic "Uitschieters" spotlight for KPN TV+, IPTV, M3U, live-TV, and similar entertainment apps.
 - Original installed app icons are used as logo buttons on home tiles, app lists, search results, and group pages.
 - Mouse and air-mouse hover animation enlarges app logos and highlights focused rows.
 - Hidden apps menu with default-hidden system/duplicate apps and optional PIN protection.
@@ -53,6 +58,7 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 - Light: no bundled third-party app logos; Android supplies real installed app icons.
 - TV friendly: large hit targets, focus rings, remote navigation, and monitor-scale presets.
 - Practical: settings apps grouped together, entertainment apps up front, hidden apps separated by default.
+- Smart: frequently used or TV-specific apps can jump into a spotlight row without manual sorting.
 
 ## Build
 
