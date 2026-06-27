@@ -1004,9 +1004,11 @@ public class MainActivity extends Activity {
         TextView row = new TextView(this);
         row.setText(subtitle == null || subtitle.isEmpty() ? title : title + "\n" + subtitle);
         row.setTextColor(Color.WHITE);
-        row.setTextSize(isTvLike() ? 22 : 18);
+        row.setTextSize(isTvLike() ? 20 : 17);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setPadding(dp(12), 0, dp(12), 0);
+        row.setMaxLines(2);
+        row.setEllipsize(android.text.TextUtils.TruncateAt.END);
         row.setFocusable(true);
         row.setBackgroundColor(Color.rgb(22, 28, 38));
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(-1, isTvLike() ? dp(76) : dp(64));
@@ -1035,8 +1037,10 @@ public class MainActivity extends Activity {
         TextView text = new TextView(this);
         text.setText(app.label + "\n" + app.category);
         text.setTextColor(Color.WHITE);
-        text.setTextSize(isTvLike() ? 21 : 17);
+        text.setTextSize(isTvLike() ? 19 : 16);
         text.setGravity(Gravity.CENTER_VERTICAL);
+        text.setMaxLines(2);
+        text.setEllipsize(android.text.TextUtils.TruncateAt.END);
         row.addView(text, new LinearLayout.LayoutParams(0, -1, 1));
 
         View.OnHoverListener hover = (v, event) -> {
@@ -1143,11 +1147,7 @@ public class MainActivity extends Activity {
                 if ("app".equals(tile.type)) drawAppIcon(canvas, tile, left, top, right, bottom, i == hoverIndex);
                 if (tile.action != null && tile.action.startsWith("live:")) drawLiveTileText(canvas, tile, left, top, right, bottom);
                 if (tile.spotlight) drawSpotlightChip(canvas, left, top, right);
-                paint.setColor(Color.WHITE);
-                paint.setTextSize(isTvLike() ? dp(22) : (tile.w > 1 ? dp(18) : dp(14)));
-                paint.setFakeBoldText(true);
-                drawLabel(canvas, tile.label, left + dp(10), bottom - (appTile ? dp(16) : dp(18)), right - dp(10));
-                paint.setFakeBoldText(false);
+                drawTileLabel(canvas, tile, left, bottom - (appTile ? dp(16) : dp(18)), right);
                 int badge = latestBadges.getOrDefault(tile.packageName, 0);
                 if (badge > 0) drawBadge(canvas, badge, right - dp(24), top + dp(18));
             }
@@ -1390,11 +1390,34 @@ public class MainActivity extends Activity {
             paint.setFakeBoldText(false);
         }
 
-        private void drawLabel(Canvas canvas, String label, float x, float baseline, float maxRight) {
+        private void drawTileLabel(Canvas canvas, Tile tile, int left, int baseline, int right) {
+            boolean appTile = "app".equals(tile.type);
+            float maxTextSize = appTile ? (isTvLike() ? dp(20) : dp(15)) : (isTvLike() ? dp(22) : (tile.w > 1 ? dp(18) : dp(14)));
+            float minTextSize = appTile ? (isTvLike() ? dp(13) : dp(10)) : (isTvLike() ? dp(14) : dp(10));
+            int inset = appTile ? dp(12) : dp(10);
+            paint.setColor(Color.WHITE);
+            paint.setFakeBoldText(true);
+            drawLabel(canvas, tile.label, left + inset, baseline, right - inset, maxTextSize, minTextSize);
+            paint.setFakeBoldText(false);
+        }
+
+        private void drawLabel(Canvas canvas, String label, float x, float baseline, float maxRight, float maxTextSize, float minTextSize) {
             if (label == null) return;
-            String text = label;
-            while (paint.measureText(text) > maxRight - x && text.length() > 4) text = text.substring(0, text.length() - 2);
-            if (!text.equals(label)) text += ".";
+            String text = label.trim();
+            float width = Math.max(1, maxRight - x);
+            paint.setTextSize(maxTextSize);
+            while (paint.measureText(text) > width && paint.getTextSize() > minTextSize) {
+                paint.setTextSize(Math.max(minTextSize, paint.getTextSize() - dp(1)));
+            }
+            while (paint.measureText(text) > width && text.length() > 1) {
+                text = text.substring(0, text.length() - 1).trim();
+            }
+            if (!text.equals(label.trim()) && text.length() > 1) {
+                while (paint.measureText(text + "...") > width && text.length() > 1) {
+                    text = text.substring(0, text.length() - 1).trim();
+                }
+                text += "...";
+            }
             canvas.drawText(text, x, baseline, paint);
         }
 
