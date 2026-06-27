@@ -11,10 +11,12 @@ Use installed Android app icons in the real launcher whenever possible. That kee
 - Google Play badge resources: https://partnermarketinghub.withgoogle.com/brands/google-play/visual-identity/badge-guidelines/
 - Unsplash home cinema photos: https://unsplash.com/s/photos/home-cinema
 - Pexels dark abstract backgrounds: https://www.pexels.com/search/abstract/
+- Simple Icons SVG CDN for recognizable preview-only brand marks: https://simpleicons.org/
+- KPN logo on Wikimedia Commons: https://commons.wikimedia.org/wiki/File:KPN-logo-2023.svg
 
 ## Notes
 
 - Do not copy random app logos from image search into the APK.
 - For the real app UI, prefer Android's `loadIcon()` result from installed apps.
-- For screenshots, use open stock photos as background mood imagery and official brand kits only where their guidelines allow it.
+- For screenshots, use open stock photos, official brand kits, or transparent preview-only SVG marks where their guidelines allow it.
 - Google, YouTube, Android TV, Netflix, and similar marks may have trademark rules even when simple logo files are easy to find.
