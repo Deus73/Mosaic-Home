@@ -1076,16 +1076,20 @@ public class MainActivity extends Activity {
                 if (right < -cell || left > getWidth() + cell || bottom < -cell || top > getHeight() + cell) continue;
                 boolean hot = i == selected || i == hoverIndex;
                 rect.set(left, top, right, bottom);
+                boolean appTile = "app".equals(tile.type);
                 paint.setStyle(Paint.Style.FILL);
-                paint.setColor(tile.missing ? Color.rgb(64, 66, 72) : tile.color);
-                canvas.drawRoundRect(rect, dp(3), dp(3), paint);
-                paint.setColor(Color.argb(50, 255, 255, 255));
-                canvas.drawRect(left, top, right, top + Math.max(dp(4), (bottom - top) / 12), paint);
+                if (appTile) drawLogoTileBackplate(canvas, tile, left, top, right, bottom, hot);
+                else {
+                    paint.setColor(tile.missing ? Color.rgb(64, 66, 72) : tile.color);
+                    canvas.drawRoundRect(rect, dp(3), dp(3), paint);
+                    paint.setColor(Color.argb(50, 255, 255, 255));
+                    canvas.drawRect(left, top, right, top + Math.max(dp(4), (bottom - top) / 12), paint);
+                }
                 if (hot) {
                     paint.setStyle(Paint.Style.STROKE);
                     paint.setStrokeWidth(i == hoverIndex ? dp(5) : dp(4));
                     paint.setColor(Color.WHITE);
-                    canvas.drawRoundRect(rect, dp(3), dp(3), paint);
+                    canvas.drawRoundRect(rect, appTile ? dp(14) : dp(3), appTile ? dp(14) : dp(3), paint);
                     paint.setStyle(Paint.Style.FILL);
                 }
                 if ("app".equals(tile.type)) drawAppIcon(canvas, tile, left, top, right, bottom, i == hoverIndex);
@@ -1094,7 +1098,7 @@ public class MainActivity extends Activity {
                 paint.setColor(Color.WHITE);
                 paint.setTextSize(isTvLike() ? dp(22) : (tile.w > 1 ? dp(18) : dp(14)));
                 paint.setFakeBoldText(true);
-                drawLabel(canvas, tile.label, left + dp(10), bottom - dp(18), right - dp(10));
+                drawLabel(canvas, tile.label, left + dp(10), bottom - (appTile ? dp(16) : dp(18)), right - dp(10));
                 paint.setFakeBoldText(false);
                 int badge = latestBadges.getOrDefault(tile.packageName, 0);
                 if (badge > 0) drawBadge(canvas, badge, right - dp(24), top + dp(18));
@@ -1132,23 +1136,42 @@ public class MainActivity extends Activity {
             paint.setFakeBoldText(false);
         }
 
+        private void drawLogoTileBackplate(Canvas canvas, Tile tile, int left, int top, int right, int bottom, boolean hot) {
+            int base = tile.missing ? Color.rgb(48, 50, 56) : Color.rgb(15, 18, 24);
+            paint.setColor(base);
+            rect.set(left, top, right, bottom);
+            canvas.drawRoundRect(rect, dp(14), dp(14), paint);
+            paint.setColor(Color.argb(hot ? 72 : 44, 255, 255, 255));
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(dp(1));
+            rect.set(left + dp(1), top + dp(1), right - dp(1), bottom - dp(1));
+            canvas.drawRoundRect(rect, dp(13), dp(13), paint);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.argb(34, Color.red(tile.color), Color.green(tile.color), Color.blue(tile.color)));
+            canvas.drawRoundRect(rect, dp(13), dp(13), paint);
+        }
+
         private void drawAppIcon(Canvas canvas, Tile tile, int left, int top, int right, int bottom, boolean hover) {
             AppEntry app = findApp(tile);
             if (app == null || app.icon == null) return;
             int tileW = right - left;
             int tileH = bottom - top;
-            int maxSize = isTvLike() ? dp(104) : dp(72);
-            int size = Math.min(Math.max(dp(42), Math.min(tileW, tileH) / 2), maxSize);
-            if (tileW > dp(230) || tileH > dp(230)) size = Math.min(size + dp(10), isTvLike() ? dp(118) : dp(82));
+            int labelSpace = isTvLike() ? dp(44) : dp(34);
+            int availableW = tileW - dp(26);
+            int availableH = tileH - labelSpace - dp(26);
+            int size = Math.min(availableW, availableH);
+            int minSize = isTvLike() ? dp(68) : dp(46);
+            int maxSize = Math.max(minSize, Math.min(tileW, tileH) - dp(24));
+            size = Math.max(minSize, Math.min(size, maxSize));
             float pulse = hover ? (float) Math.sin(System.currentTimeMillis() / 90.0) * dp(4) : 0;
-            int iconLeft = left + Math.max(dp(12), (tileW - size) / 2);
-            int iconTop = top + Math.max(dp(12), (tileH - size) / 2 - dp(12)) - Math.round(pulse);
-            rect.set(iconLeft - dp(9), iconTop - dp(9), iconLeft + size + dp(9), iconTop + size + dp(9));
+            int iconLeft = left + (tileW - size) / 2;
+            int iconTop = top + Math.max(dp(13), (tileH - labelSpace - size) / 2 + dp(6)) - Math.round(pulse);
+            rect.set(iconLeft - dp(12), iconTop - dp(12), iconLeft + size + dp(12), iconTop + size + dp(12));
             paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.argb(64, 255, 255, 255));
-            canvas.drawRoundRect(rect, dp(12), dp(12), paint);
+            paint.setColor(Color.argb(58, 255, 255, 255));
+            canvas.drawRoundRect(rect, dp(18), dp(18), paint);
             app.icon.setBounds(iconLeft, iconTop, iconLeft + size, iconTop + size);
-            app.icon.setAlpha(hover ? 255 : 232);
+            app.icon.setAlpha(hover ? 255 : 246);
             app.icon.draw(canvas);
             app.icon.setAlpha(255);
         }
