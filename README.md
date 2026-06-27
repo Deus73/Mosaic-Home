@@ -18,6 +18,10 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 
 ![Google TV style home](outputs/screenshots/mosaic-monitor-logo-home-1920x1080.png)
 
+### Default Neon Background
+
+![Default neon background](outputs/screenshots/mosaic-default-neon-background-1920x1080.png)
+
 ### Scalable App Logo Cards
 
 ![Scalable app logo cards](outputs/screenshots/mosaic-logo-cards-1920x1080.png)
@@ -59,7 +63,7 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 - Original installed app icons are used as logo buttons on home tiles, app lists, search results, and group pages.
 - App tiles use scalable logo-card rendering, so installed app logos stay readable on phones, tablets, TVs, and monitors.
 - Action tiles can use contextual backgrounds, such as question marks and magnifiers for Search and light beams for Spotlight.
-- Selectable launcher backgrounds: default dark, cinema glow, ocean depth, warm monitor, spotlight stage, search pattern, and high contrast.
+- Selectable launcher backgrounds: default neon wallpaper, default dark, cinema glow, ocean depth, warm monitor, spotlight stage, search pattern, and high contrast.
 - Mouse and air-mouse hover animation enlarges app logos and highlights focused rows.
 - Hidden apps menu with default-hidden system/duplicate apps and optional PIN protection.
 - Twelve presets: Google TV style, Android TV standard, Entertainment first, TV leanback, Monitor dashboard, Work focus, Minimal essentials, Gaming, Media studio, Family clean, Travel mode, and System admin.

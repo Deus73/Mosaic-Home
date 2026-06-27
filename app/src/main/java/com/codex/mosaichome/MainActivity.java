@@ -13,6 +13,8 @@ import android.content.pm.ResolveInfo;
 import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -70,7 +72,7 @@ public class MainActivity extends Activity {
             "Metro", "Cinema", "Ocean", "High contrast", "Warm monitor", "Night TV"
     };
     private static final String[] BACKGROUNDS = {
-            "Default dark", "Cinema glow", "Ocean depth", "Warm monitor", "Spotlight stage",
+            "Default neon", "Default dark", "Cinema glow", "Ocean depth", "Warm monitor", "Spotlight stage",
             "Search pattern", "High contrast"
     };
     private static final List<MainActivity> LIVE = new ArrayList<>();
@@ -85,6 +87,7 @@ public class MainActivity extends Activity {
     private final HashSet<String> defaultHidden = new HashSet<>();
     private boolean hiddenUnlocked;
     private int selected = 0;
+    private Bitmap defaultNeonBackground;
 
     public static void updateBadges(Map<String, Integer> badges) {
         latestBadges = badges;
@@ -548,7 +551,7 @@ public class MainActivity extends Activity {
         addRow(panel, "Presets", "Change the whole home layout", () -> showPresets());
         addRow(panel, "Hide apps", hidden.size() + " hidden", () -> showHiddenApps());
         addRow(panel, "Themes", prefs.getString("theme", "Metro"), () -> showThemes());
-        addRow(panel, "Background", prefs.getString("background", "Default dark"), () -> showBackgrounds());
+        addRow(panel, "Background", prefs.getString("background", "Default neon"), () -> showBackgrounds());
         addRow(panel, "Backup / import", "Clipboard layout tools", () -> showBackup());
         addRow(panel, "Live info tiles", "Weather, news, music and clock tiles", () -> showLiveTiles());
         addRow(panel, "Hidden-app security", prefs.getBoolean("hiddenLock", false) ? "PIN lock enabled" : "Not locked", () -> showSecurity());
@@ -645,7 +648,7 @@ public class MainActivity extends Activity {
     private void showBackgrounds() {
         LinearLayout panel = panel("Backgrounds");
         for (String background : BACKGROUNDS) {
-            addRow(panel, background, background.equals(prefs.getString("background", "Default dark")) ? "Active" : backgroundDescription(background), () -> {
+            addRow(panel, background, background.equals(prefs.getString("background", "Default neon")) ? "Active" : backgroundDescription(background), () -> {
                 prefs.edit().putString("background", background).apply();
                 board.invalidate();
                 showBackgrounds();
@@ -661,12 +664,13 @@ public class MainActivity extends Activity {
 
     private String backgroundDescription(String background) {
         if ("Cinema glow".equals(background)) return "Deep red cinema room feel";
+        if ("Default dark".equals(background)) return "Clean dark launcher background";
         if ("Ocean depth".equals(background)) return "Cool blue-green depth";
         if ("Warm monitor".equals(background)) return "Soft amber desktop tone";
         if ("Spotlight stage".equals(background)) return "Subtle beams behind the tiles";
         if ("Search pattern".equals(background)) return "Quiet question and magnifier texture";
         if ("High contrast".equals(background)) return "Pure black for maximum clarity";
-        return "Clean dark launcher background";
+        return "Neon waves with deep blue and magenta motion";
     }
 
     private void showBackup() {
@@ -926,8 +930,9 @@ public class MainActivity extends Activity {
     }
 
     private int backgroundColor() {
-        String background = prefs == null ? "Default dark" : prefs.getString("background", "Default dark");
+        String background = prefs == null ? "Default neon" : prefs.getString("background", "Default neon");
         if ("High contrast".equals(background)) return Color.BLACK;
+        if ("Default dark".equals(background)) return Color.rgb(9, 11, 16);
         if ("Ocean depth".equals(background)) return Color.rgb(4, 20, 28);
         if ("Warm monitor".equals(background)) return Color.rgb(20, 15, 12);
         if ("Cinema glow".equals(background)) return Color.rgb(10, 8, 11);
@@ -1151,12 +1156,40 @@ public class MainActivity extends Activity {
         }
 
         private void drawSelectedBackground(Canvas canvas) {
-            String background = prefs == null ? "Default dark" : prefs.getString("background", "Default dark");
-            if ("Cinema glow".equals(background)) drawCinemaBackground(canvas);
+            String background = prefs == null ? "Default neon" : prefs.getString("background", "Default neon");
+            if ("Default neon".equals(background)) drawDefaultNeonBackground(canvas);
+            else if ("Cinema glow".equals(background)) drawCinemaBackground(canvas);
             else if ("Ocean depth".equals(background)) drawOceanBackground(canvas);
             else if ("Warm monitor".equals(background)) drawWarmMonitorBackground(canvas);
             else if ("Spotlight stage".equals(background)) drawStageBackground(canvas);
             else if ("Search pattern".equals(background)) drawSearchBackground(canvas);
+        }
+
+        private void drawDefaultNeonBackground(Canvas canvas) {
+            Bitmap bitmap = defaultNeonBackground();
+            if (bitmap == null) {
+                drawCinemaBackground(canvas);
+                return;
+            }
+            float scale = Math.max(getWidth() / (float) bitmap.getWidth(), getHeight() / (float) bitmap.getHeight());
+            float drawW = bitmap.getWidth() * scale;
+            float drawH = bitmap.getHeight() * scale;
+            float left = (getWidth() - drawW) / 2f;
+            float top = (getHeight() - drawH) / 2f;
+            rect.set(left, top, left + drawW, top + drawH);
+            paint.setAlpha(255);
+            canvas.drawBitmap(bitmap, null, rect, paint);
+            paint.setAlpha(255);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.argb(88, 0, 0, 20));
+            canvas.drawRect(0, 0, getWidth(), getHeight(), paint);
+        }
+
+        private Bitmap defaultNeonBackground() {
+            if (defaultNeonBackground == null) {
+                defaultNeonBackground = BitmapFactory.decodeResource(getResources(), R.drawable.default_neon_background);
+            }
+            return defaultNeonBackground;
         }
 
         private void drawCinemaBackground(Canvas canvas) {
