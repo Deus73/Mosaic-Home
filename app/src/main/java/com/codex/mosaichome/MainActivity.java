@@ -255,6 +255,7 @@ public class MainActivity extends Activity {
             addAction("For you", "group:For You", 2, 1, 0, Color.rgb(183, 62, 119));
             addAction("Profile", "profile", 1, 1, 0, Color.rgb(132, 91, 178));
             addAction("Settings", "group:Settings", 1, 1, 0, Color.rgb(94, 110, 130));
+            addAction("Background", "backgrounds", 2, 1, 0, Color.rgb(47, 65, 85));
             addAction("Continue watching", "live:continue", 3, 1, 0, Color.rgb(72, 143, 224));
             addAction("Spotlight", "group:Spotlight", 2, 1, 0, Color.rgb(221, 73, 73));
             addAction("Top picks", "group:Android TV", 2, 1, 0, Color.rgb(235, 126, 32));
@@ -1113,15 +1114,17 @@ public class MainActivity extends Activity {
             super.onDraw(canvas);
             canvas.drawColor(backgroundColor());
             drawSelectedBackground(canvas);
+            drawGoogleTvChrome(canvas);
             int columns = getColumns();
             int cell = Math.max(isTvLike() ? dp(108) : dp(72), (getWidth() - dp(24)) / columns);
             int gap = Math.max(dp(6), cell / 18);
+            int topInset = boardTopInset();
             List<PlacedTile> placed = layoutTiles(columns);
             for (int i = 0; i < placed.size(); i++) {
                 PlacedTile item = placed.get(i);
                 Tile tile = item.tile;
                 int left = dp(12) - Math.round(scrollX) + item.page * getWidth() + item.col * cell + gap;
-                int top = dp(28) - Math.round(scrollY) + item.row * cell + gap;
+                int top = topInset - Math.round(scrollY) + item.row * cell + gap;
                 int right = left + item.w * cell - gap;
                 int bottom = top + item.h * cell - gap;
                 if (right < -cell || left > getWidth() + cell || bottom < -cell || top > getHeight() + cell) continue;
@@ -1153,6 +1156,63 @@ public class MainActivity extends Activity {
             }
             if (hoverIndex >= 0) postInvalidateDelayed(16);
             postInvalidateDelayed(1000);
+        }
+
+        private int boardTopInset() {
+            String preset = prefs == null ? "Google TV style" : prefs.getString("preset", "Google TV style");
+            if ("Google TV style".equals(preset)) return isTvLike() ? dp(162) : dp(108);
+            return dp(28);
+        }
+
+        private void drawGoogleTvChrome(Canvas canvas) {
+            String preset = prefs == null ? "Google TV style" : prefs.getString("preset", "Google TV style");
+            if (!"Google TV style".equals(preset)) return;
+
+            int left = dp(28);
+            int top = isTvLike() ? dp(28) : dp(18);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.argb(82, 0, 0, 0));
+            rect.set(0, 0, getWidth(), boardTopInset() - dp(10));
+            canvas.drawRect(rect, paint);
+
+            paint.setColor(Color.argb(42, 255, 255, 255));
+            canvas.drawRoundRect(dp(22), top + dp(74), getWidth() - dp(22), top + dp(76), dp(1), dp(1), paint);
+
+            paint.setFakeBoldText(true);
+            paint.setColor(Color.WHITE);
+            paint.setTextSize(isTvLike() ? dp(30) : dp(22));
+            canvas.drawText("Mosaic TV", left, top + dp(30), paint);
+
+            paint.setFakeBoldText(false);
+            paint.setTextSize(isTvLike() ? dp(18) : dp(13));
+            paint.setColor(Color.argb(210, 230, 235, 245));
+            canvas.drawText("Google TV style + Mosaic tiles", left, top + dp(58), paint);
+
+            String[] tabs = {"Home", "Spotlight", "Live", "Apps", "Settings"};
+            float x = isTvLike() ? dp(330) : dp(28);
+            float y = isTvLike() ? top + dp(30) : top + dp(88);
+            for (int i = 0; i < tabs.length; i++) {
+                boolean active = i == 0;
+                paint.setFakeBoldText(active);
+                paint.setTextSize(isTvLike() ? dp(20) : dp(14));
+                paint.setColor(active ? Color.WHITE : Color.argb(190, 210, 218, 232));
+                canvas.drawText(tabs[i], x, y, paint);
+                if (active) {
+                    paint.setStyle(Paint.Style.FILL);
+                    paint.setColor(Color.WHITE);
+                    canvas.drawRoundRect(x, y + dp(8), x + dp(42), y + dp(12), dp(2), dp(2), paint);
+                }
+                x += paint.measureText(tabs[i]) + (isTvLike() ? dp(34) : dp(22));
+            }
+            paint.setFakeBoldText(false);
+
+            String background = prefs == null ? "Default neon" : prefs.getString("background", "Default neon");
+            String time = new SimpleDateFormat("HH:mm", Locale.getDefault()).format(new Date());
+            paint.setTextAlign(Paint.Align.RIGHT);
+            paint.setTextSize(isTvLike() ? dp(18) : dp(13));
+            paint.setColor(Color.argb(200, 230, 235, 245));
+            canvas.drawText(background + "  " + time, getWidth() - dp(28), top + dp(30), paint);
+            paint.setTextAlign(Paint.Align.LEFT);
         }
 
         private void drawSelectedBackground(Canvas canvas) {
@@ -1529,10 +1589,11 @@ public class MainActivity extends Activity {
             List<PlacedTile> placed = layoutTiles(getColumns());
             int cell = Math.max(isTvLike() ? dp(108) : dp(72), (getWidth() - dp(24)) / getColumns());
             int gap = Math.max(dp(6), cell / 18);
+            int topInset = boardTopInset();
             for (int i = placed.size() - 1; i >= 0; i--) {
                 PlacedTile item = placed.get(i);
                 int left = dp(12) - Math.round(scrollX) + item.page * getWidth() + item.col * cell + gap;
-                int top = dp(28) - Math.round(scrollY) + item.row * cell + gap;
+                int top = topInset - Math.round(scrollY) + item.row * cell + gap;
                 int right = left + item.w * cell - gap;
                 int bottom = top + item.h * cell - gap;
                 if (px >= left && px <= right && py >= top && py <= bottom) {

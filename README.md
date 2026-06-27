@@ -16,6 +16,10 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 
 ### Google TV Style Home
 
+![Google TV Mosaic home](outputs/screenshots/mosaic-google-tv-mosaic-1920x1080.png)
+
+### Mosaic Logo Home
+
 ![Google TV style home](outputs/screenshots/mosaic-monitor-logo-home-1920x1080.png)
 
 ### Default Neon Background
@@ -65,7 +69,7 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 ## Highlights
 
 - Native Android launcher with HOME, LAUNCHER, and LEANBACK launcher support.
-- Google TV style default preset with For You, Continue Watching, Live, Apps, and Settings rows.
+- Google TV style default preset with top navigation, For You, Continue Watching, Live, Apps, Settings, and Mosaic logo rows.
 - Automatic app grouping for Android TV, Live TV / IPTV, Entertainment, TV Tools, Music, Games, Settings, Communication, Productivity, Media, Browser, Tools, Shopping, System, and Other.
 - Automatic Spotlight row for KPN TV+, IPTV, M3U, live-TV, and similar entertainment apps.
 - Original installed app icons are used as logo buttons on home tiles, app lists, search results, and group pages.
