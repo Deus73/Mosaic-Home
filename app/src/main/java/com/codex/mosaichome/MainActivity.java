@@ -69,6 +69,10 @@ public class MainActivity extends Activity {
     private static final String[] THEMES = {
             "Metro", "Cinema", "Ocean", "High contrast", "Warm monitor", "Night TV"
     };
+    private static final String[] BACKGROUNDS = {
+            "Default dark", "Cinema glow", "Ocean depth", "Warm monitor", "Spotlight stage",
+            "Search pattern", "High contrast"
+    };
     private static final List<MainActivity> LIVE = new ArrayList<>();
     private static Map<String, Integer> latestBadges = new HashMap<>();
 
@@ -333,6 +337,7 @@ public class MainActivity extends Activity {
         addAction("Hide apps", "hide", 2, 1, 0, Color.rgb(47, 65, 85));
         addAction("Settings", "group:Settings", 1, 1, 0, Color.rgb(94, 110, 130));
         addAction("Themes", "themes", 1, 1, 0, Color.rgb(0, 158, 146));
+        addAction("Background", "backgrounds", 2, 1, 0, Color.rgb(47, 65, 85));
         addAction("Backup", "backup", 1, 1, 0, Color.rgb(72, 143, 224));
         addAction("Live info", "live", 2, 1, 0, Color.rgb(183, 62, 119));
         addAction("Security", "security", 1, 1, 0, Color.rgb(221, 73, 73));
@@ -506,6 +511,7 @@ public class MainActivity extends Activity {
         else if ("presets".equals(action)) showPresets();
         else if ("hide".equals(action)) showHiddenApps();
         else if ("themes".equals(action)) showThemes();
+        else if ("backgrounds".equals(action)) showBackgrounds();
         else if ("backup".equals(action)) showBackup();
         else if ("live".equals(action)) showLiveTiles();
         else if ("security".equals(action)) showSecurity();
@@ -542,6 +548,7 @@ public class MainActivity extends Activity {
         addRow(panel, "Presets", "Change the whole home layout", () -> showPresets());
         addRow(panel, "Hide apps", hidden.size() + " hidden", () -> showHiddenApps());
         addRow(panel, "Themes", prefs.getString("theme", "Metro"), () -> showThemes());
+        addRow(panel, "Background", prefs.getString("background", "Default dark"), () -> showBackgrounds());
         addRow(panel, "Backup / import", "Clipboard layout tools", () -> showBackup());
         addRow(panel, "Live info tiles", "Weather, news, music and clock tiles", () -> showLiveTiles());
         addRow(panel, "Hidden-app security", prefs.getBoolean("hiddenLock", false) ? "PIN lock enabled" : "Not locked", () -> showSecurity());
@@ -633,6 +640,33 @@ public class MainActivity extends Activity {
         addRow(panel, "Tile animation", "Hover pulse and focus ring are enabled", () ->
                 Toast.makeText(this, "Hover animation is already active for mouse and air-mouse.", Toast.LENGTH_SHORT).show());
         showPanel(panel);
+    }
+
+    private void showBackgrounds() {
+        LinearLayout panel = panel("Backgrounds");
+        for (String background : BACKGROUNDS) {
+            addRow(panel, background, background.equals(prefs.getString("background", "Default dark")) ? "Active" : backgroundDescription(background), () -> {
+                prefs.edit().putString("background", background).apply();
+                board.invalidate();
+                showBackgrounds();
+            });
+        }
+        addRow(panel, "Match theme", "Use the current theme as background base", () -> {
+            prefs.edit().remove("background").apply();
+            board.invalidate();
+            showBackgrounds();
+        });
+        showPanel(panel);
+    }
+
+    private String backgroundDescription(String background) {
+        if ("Cinema glow".equals(background)) return "Deep red cinema room feel";
+        if ("Ocean depth".equals(background)) return "Cool blue-green depth";
+        if ("Warm monitor".equals(background)) return "Soft amber desktop tone";
+        if ("Spotlight stage".equals(background)) return "Subtle beams behind the tiles";
+        if ("Search pattern".equals(background)) return "Quiet question and magnifier texture";
+        if ("High contrast".equals(background)) return "Pure black for maximum clarity";
+        return "Clean dark launcher background";
     }
 
     private void showBackup() {
@@ -892,6 +926,13 @@ public class MainActivity extends Activity {
     }
 
     private int backgroundColor() {
+        String background = prefs == null ? "Default dark" : prefs.getString("background", "Default dark");
+        if ("High contrast".equals(background)) return Color.BLACK;
+        if ("Ocean depth".equals(background)) return Color.rgb(4, 20, 28);
+        if ("Warm monitor".equals(background)) return Color.rgb(20, 15, 12);
+        if ("Cinema glow".equals(background)) return Color.rgb(10, 8, 11);
+        if ("Spotlight stage".equals(background)) return Color.rgb(11, 10, 15);
+        if ("Search pattern".equals(background)) return Color.rgb(7, 18, 22);
         String theme = prefs == null ? "Metro" : prefs.getString("theme", "Metro");
         if ("High contrast".equals(theme)) return Color.BLACK;
         if ("Ocean".equals(theme)) return Color.rgb(4, 20, 28);
@@ -1062,6 +1103,7 @@ public class MainActivity extends Activity {
         protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             canvas.drawColor(backgroundColor());
+            drawSelectedBackground(canvas);
             int columns = getColumns();
             int cell = Math.max(isTvLike() ? dp(108) : dp(72), (getWidth() - dp(24)) / columns);
             int gap = Math.max(dp(6), cell / 18);
@@ -1106,6 +1148,71 @@ public class MainActivity extends Activity {
             }
             if (hoverIndex >= 0) postInvalidateDelayed(16);
             postInvalidateDelayed(1000);
+        }
+
+        private void drawSelectedBackground(Canvas canvas) {
+            String background = prefs == null ? "Default dark" : prefs.getString("background", "Default dark");
+            if ("Cinema glow".equals(background)) drawCinemaBackground(canvas);
+            else if ("Ocean depth".equals(background)) drawOceanBackground(canvas);
+            else if ("Warm monitor".equals(background)) drawWarmMonitorBackground(canvas);
+            else if ("Spotlight stage".equals(background)) drawStageBackground(canvas);
+            else if ("Search pattern".equals(background)) drawSearchBackground(canvas);
+        }
+
+        private void drawCinemaBackground(Canvas canvas) {
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.argb(42, 221, 73, 73));
+            canvas.drawCircle(getWidth() * 0.74f, getHeight() * 0.22f, Math.max(getWidth(), getHeight()) * 0.32f, paint);
+            paint.setColor(Color.argb(30, 235, 126, 32));
+            canvas.drawCircle(getWidth() * 0.18f, getHeight() * 0.82f, Math.max(getWidth(), getHeight()) * 0.24f, paint);
+        }
+
+        private void drawOceanBackground(Canvas canvas) {
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(dp(1));
+            paint.setColor(Color.argb(26, 120, 220, 230));
+            int step = isTvLike() ? dp(80) : dp(52);
+            for (int x = -step; x < getWidth() + step; x += step) canvas.drawLine(x, 0, x + step * 2, getHeight(), paint);
+            for (int y = step; y < getHeight(); y += step) canvas.drawLine(0, y, getWidth(), y + step / 2, paint);
+        }
+
+        private void drawWarmMonitorBackground(Canvas canvas) {
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(Color.argb(30, 238, 194, 62));
+            for (int y = dp(36); y < getHeight(); y += dp(72)) {
+                canvas.drawRect(0, y, getWidth(), y + dp(2), paint);
+            }
+        }
+
+        private void drawStageBackground(Canvas canvas) {
+            int top = dp(8);
+            int bottom = getHeight();
+            for (int i = 0; i < 5; i++) {
+                float cx = getWidth() * (0.16f + i * 0.18f);
+                android.graphics.Path beam = new android.graphics.Path();
+                beam.moveTo(cx, top);
+                beam.lineTo(cx - getWidth() * 0.13f, bottom);
+                beam.lineTo(cx + getWidth() * 0.13f, bottom);
+                beam.close();
+                paint.setColor(Color.argb(18 + i * 4, 255, 255, 220));
+                paint.setStyle(Paint.Style.FILL);
+                canvas.drawPath(beam, paint);
+            }
+        }
+
+        private void drawSearchBackground(Canvas canvas) {
+            int step = isTvLike() ? dp(92) : dp(58);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setFakeBoldText(true);
+            paint.setTextSize(isTvLike() ? dp(34) : dp(24));
+            for (int y = step; y < getHeight(); y += step) {
+                for (int x = dp(24); x < getWidth(); x += step) {
+                    paint.setColor(Color.argb(20, 255, 255, 255));
+                    canvas.drawText("?", x, y, paint);
+                    drawMagnifier(canvas, x + step * 0.42f, y - step * 0.28f, Math.max(dp(6), step / 10), 24);
+                }
+            }
+            paint.setFakeBoldText(false);
         }
 
         private void drawLiveTileText(Canvas canvas, Tile tile, int left, int top, int right, int bottom) {
