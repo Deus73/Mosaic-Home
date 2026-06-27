@@ -1,5 +1,6 @@
 package com.codex.mosaichome;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.ClipData;
@@ -46,6 +47,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -161,18 +163,18 @@ public class MainActivity extends Activity {
     }
 
     private void loadApps() {
-        Intent intent = new Intent(Intent.ACTION_MAIN, null);
-        intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        List<ResolveInfo> resolved = getPackageManager().queryIntentActivities(intent, 0);
+        Map<String, ResolveInfo> resolved = new LinkedHashMap<>();
+        collectLaunchableApps(resolved, Intent.CATEGORY_LAUNCHER);
+        collectLaunchableApps(resolved, Intent.CATEGORY_LEANBACK_LAUNCHER);
         Map<String, Integer> usage = readUsage();
         Collator collator = Collator.getInstance(Locale.getDefault());
         apps.clear();
-        for (ResolveInfo info : resolved) {
+        for (ResolveInfo info : resolved.values()) {
             AppEntry app = new AppEntry();
             app.label = info.loadLabel(getPackageManager()).toString();
             app.packageName = info.activityInfo.packageName;
             app.className = info.activityInfo.name;
-            app.usage = usage.getOrDefault(app.packageName, 0);
+            app.usage = intValue(usage, app.packageName);
             app.category = categorize(app);
             app.icon = info.loadIcon(getPackageManager());
             app.hidden = hidden.contains(app.key());
@@ -184,6 +186,17 @@ public class MainActivity extends Activity {
             int byUsage = Integer.compare(b.usage, a.usage);
             return byUsage != 0 ? byUsage : collator.compare(a.label, b.label);
         });
+    }
+
+    private void collectLaunchableApps(Map<String, ResolveInfo> resolved, String category) {
+        Intent intent = new Intent(Intent.ACTION_MAIN, null);
+        intent.addCategory(category);
+        List<ResolveInfo> matches = getPackageManager().queryIntentActivities(intent, 0);
+        for (ResolveInfo info : matches) {
+            if (info.activityInfo == null) continue;
+            String key = info.activityInfo.packageName + "/" + info.activityInfo.name;
+            if (!resolved.containsKey(key)) resolved.put(key, info);
+        }
     }
 
     private void seedDefaultHiddenApps() {
@@ -423,7 +436,7 @@ public class MainActivity extends Activity {
 
     private int spotlightScore(AppEntry app) {
         String hay = (app.label + " " + app.packageName + " " + app.category).toLowerCase(Locale.US);
-        int score = app.usage * 10 + latestBadges.getOrDefault(app.packageName, 0) * 20;
+        int score = app.usage * 10 + intValue(latestBadges, app.packageName) * 20;
         if ("Live TV / IPTV".equals(app.category)) score += 75;
         if ("Android TV".equals(app.category) || "Entertainment".equals(app.category)) score += 35;
         if (has(hay, "kpn", "kpnandroidtv", "iptv", "m3u", "tivimate", "live tv", "livetv", "zapping", "channels")) score += 95;
@@ -487,13 +500,18 @@ public class MainActivity extends Activity {
 
     private void bumpUsage(String packageName) {
         Map<String, Integer> usage = readUsage();
-        usage.put(packageName, usage.getOrDefault(packageName, 0) + 1);
+        usage.put(packageName, intValue(usage, packageName) + 1);
         JSONObject obj = new JSONObject();
         try {
             for (Map.Entry<String, Integer> item : usage.entrySet()) obj.put(item.getKey(), item.getValue());
         } catch (JSONException ignored) {
         }
         prefs.edit().putString("usage", obj.toString()).apply();
+    }
+
+    private static int intValue(Map<String, Integer> map, String key) {
+        Integer value = map.get(key);
+        return value == null ? 0 : value;
     }
 
     private void launch(Tile tile) {
@@ -1018,6 +1036,7 @@ public class MainActivity extends Activity {
         row.setOnClickListener(v -> click.run());
     }
 
+    @SuppressLint("SetTextI18n")
     private void addAppRow(LinearLayout parent, AppEntry app, Runnable click) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.HORIZONTAL);
@@ -1151,7 +1170,7 @@ public class MainActivity extends Activity {
                 if (tile.action != null && tile.action.startsWith("live:")) drawLiveTileText(canvas, tile, left, top, right, bottom);
                 if (tile.spotlight) drawSpotlightChip(canvas, left, top, right);
                 drawTileLabel(canvas, tile, left, bottom - (appTile ? dp(16) : dp(18)), right);
-                int badge = latestBadges.getOrDefault(tile.packageName, 0);
+                int badge = intValue(latestBadges, tile.packageName);
                 if (badge > 0) drawBadge(canvas, badge, right - dp(24), top + dp(18));
             }
             if (hoverIndex >= 0) postInvalidateDelayed(16);
@@ -1563,7 +1582,10 @@ public class MainActivity extends Activity {
                 return true;
             }
             if (event.getAction() == MotionEvent.ACTION_UP) {
-                if (!dragging) hit(event.getX(), event.getY(), System.currentTimeMillis() - downAt > 520);
+                if (!dragging) {
+                    performClick();
+                    hit(event.getX(), event.getY(), System.currentTimeMillis() - downAt > 520);
+                }
                 else {
                     currentPage = Math.max(0, Math.round(scrollX / Math.max(1, getWidth())));
                     scrollX = currentPage * getWidth();
@@ -1572,6 +1594,12 @@ public class MainActivity extends Activity {
                 return true;
             }
             return super.onTouchEvent(event);
+        }
+
+        @Override
+        public boolean performClick() {
+            super.performClick();
+            return true;
         }
 
         private void hit(float px, float py, boolean edit) {

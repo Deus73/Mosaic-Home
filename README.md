@@ -8,7 +8,11 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 
 ## Download
 
+[![Download Mosaic Home APK](https://img.shields.io/badge/Download-Mosaic%20Home%20APK-18a999?style=for-the-badge&logo=android&logoColor=white)](https://github.com/Deus73/Mosaic-Home/raw/main/outputs/MosaicHome-debug.apk)
+
 - Debug APK: [outputs/MosaicHome-debug.apk](outputs/MosaicHome-debug.apk)
+- Direct download: [MosaicHome-debug.apk](https://github.com/Deus73/Mosaic-Home/raw/main/outputs/MosaicHome-debug.apk)
+- Test report: [outputs/test-report.md](outputs/test-report.md)
 - Visual sources: [outputs/visual-sources.md](outputs/visual-sources.md)
 - Official TV app links: [outputs/official-tv-app-links.md](outputs/official-tv-app-links.md)
 

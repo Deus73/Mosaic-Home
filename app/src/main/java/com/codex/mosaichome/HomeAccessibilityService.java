@@ -12,9 +12,7 @@ public class HomeAccessibilityService extends AccessibilityService {
         if ("notifications".equals(action)) return service.performGlobalAction(GLOBAL_ACTION_NOTIFICATIONS);
         if ("quick_settings".equals(action)) return service.performGlobalAction(GLOBAL_ACTION_QUICK_SETTINGS);
         if ("recents".equals(action)) return service.performGlobalAction(GLOBAL_ACTION_RECENTS);
-        if ("power".equals(action) && android.os.Build.VERSION.SDK_INT >= 21) {
-            return service.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG);
-        }
+        if ("power".equals(action)) return service.performGlobalAction(GLOBAL_ACTION_POWER_DIALOG);
         return false;
     }
 

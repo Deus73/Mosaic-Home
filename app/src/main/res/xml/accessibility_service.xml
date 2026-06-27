@@ -1,7 +1,9 @@
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:accessibilityEventTypes="typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
     android:canPerformGestures="false"
     android:canRetrieveWindowContent="false"
     android:description="@string/accessibility_name"
-    android:notificationTimeout="50" />
+    android:notificationTimeout="50"
+    tools:targetApi="n" />

@@ -27,7 +27,8 @@ public class BadgeNotificationService extends NotificationListenerService {
         Map<String, Integer> counts = new HashMap<>();
         if (active != null) {
             for (StatusBarNotification item : active) {
-                counts.put(item.getPackageName(), counts.getOrDefault(item.getPackageName(), 0) + 1);
+                Integer current = counts.get(item.getPackageName());
+                counts.put(item.getPackageName(), (current == null ? 0 : current) + 1);
             }
         }
         MainActivity.updateBadges(counts);
