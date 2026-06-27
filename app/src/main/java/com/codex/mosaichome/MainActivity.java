@@ -1336,17 +1336,16 @@ public class MainActivity extends Activity {
         }
 
         private void drawLogoTileBackplate(Canvas canvas, Tile tile, int left, int top, int right, int bottom, boolean hot) {
-            int base = tile.missing ? Color.rgb(48, 50, 56) : Color.rgb(15, 18, 24);
-            paint.setColor(base);
+            paint.setColor(tile.missing ? Color.argb(130, 48, 50, 56) : Color.argb(hot ? 104 : 72, 15, 18, 24));
             rect.set(left, top, right, bottom);
             canvas.drawRoundRect(rect, dp(14), dp(14), paint);
-            paint.setColor(Color.argb(hot ? 72 : 44, 255, 255, 255));
+            paint.setColor(Color.argb(hot ? 110 : 62, 255, 255, 255));
             paint.setStyle(Paint.Style.STROKE);
             paint.setStrokeWidth(dp(1));
             rect.set(left + dp(1), top + dp(1), right - dp(1), bottom - dp(1));
             canvas.drawRoundRect(rect, dp(13), dp(13), paint);
             paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.argb(34, Color.red(tile.color), Color.green(tile.color), Color.blue(tile.color)));
+            paint.setColor(Color.argb(hot ? 48 : 28, Color.red(tile.color), Color.green(tile.color), Color.blue(tile.color)));
             canvas.drawRoundRect(rect, dp(13), dp(13), paint);
         }
 
@@ -1367,7 +1366,7 @@ public class MainActivity extends Activity {
             int iconTop = top + Math.max(dp(13), (tileH - labelSpace - size) / 2 + dp(6)) - Math.round(pulse);
             rect.set(iconLeft - dp(12), iconTop - dp(12), iconLeft + size + dp(12), iconTop + size + dp(12));
             paint.setStyle(Paint.Style.FILL);
-            paint.setColor(Color.argb(58, 255, 255, 255));
+            paint.setColor(Color.argb(hover ? 92 : 64, 255, 255, 255));
             canvas.drawRoundRect(rect, dp(18), dp(18), paint);
             app.icon.setBounds(iconLeft, iconTop, iconLeft + size, iconTop + size);
             app.icon.setAlpha(hover ? 255 : 246);

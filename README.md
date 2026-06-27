@@ -22,6 +22,10 @@ Mosaic Home combines a Square Home-style tile launcher with a Google TV / Androi
 
 ![Default neon background](outputs/screenshots/mosaic-default-neon-background-1920x1080.png)
 
+### Transparent Glass Tiles
+
+![Transparent glass tiles](outputs/screenshots/mosaic-transparent-tiles-1920x1080.png)
+
 ### Scalable App Logo Cards
 
 ![Scalable app logo cards](outputs/screenshots/mosaic-logo-cards-1920x1080.png)
