@@ -1082,6 +1082,7 @@ public class MainActivity extends Activity {
                 else {
                     paint.setColor(tile.missing ? Color.rgb(64, 66, 72) : tile.color);
                     canvas.drawRoundRect(rect, dp(3), dp(3), paint);
+                    drawActionPattern(canvas, tile, left, top, right, bottom);
                     paint.setColor(Color.argb(50, 255, 255, 255));
                     canvas.drawRect(left, top, right, top + Math.max(dp(4), (bottom - top) / 12), paint);
                 }
@@ -1134,6 +1135,64 @@ public class MainActivity extends Activity {
                 canvas.drawText("TV row placeholder", left + dp(12), top + dp(68), paint);
             }
             paint.setFakeBoldText(false);
+        }
+
+        private void drawActionPattern(Canvas canvas, Tile tile, int left, int top, int right, int bottom) {
+            if ("search".equals(tile.action)) {
+                drawSearchPattern(canvas, left, top, right, bottom);
+            } else if ("Spotlight".equals(tile.label) || "group:Spotlight".equals(tile.action)) {
+                drawSpotlightPattern(canvas, left, top, right, bottom);
+            }
+        }
+
+        private void drawSearchPattern(Canvas canvas, int left, int top, int right, int bottom) {
+            int step = isTvLike() ? dp(42) : dp(30);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setFakeBoldText(true);
+            paint.setTextSize(isTvLike() ? dp(24) : dp(18));
+            for (int y = top + dp(18); y < bottom - dp(14); y += step) {
+                for (int x = left + dp(18); x < right - dp(14); x += step) {
+                    int shade = ((x / Math.max(1, step)) + (y / Math.max(1, step))) % 2 == 0 ? 40 : 24;
+                    paint.setColor(Color.argb(shade, 255, 255, 255));
+                    canvas.drawText("?", x, y, paint);
+                    drawMagnifier(canvas, x + dp(18), y - dp(8), Math.max(dp(5), step / 8), shade + 10);
+                }
+            }
+            paint.setFakeBoldText(false);
+        }
+
+        private void drawMagnifier(Canvas canvas, float cx, float cy, float radius, int alpha) {
+            paint.setStyle(Paint.Style.STROKE);
+            paint.setStrokeWidth(Math.max(1, dp(2)));
+            paint.setColor(Color.argb(Math.min(90, alpha), 255, 255, 255));
+            canvas.drawCircle(cx, cy, radius, paint);
+            canvas.drawLine(cx + radius * 0.7f, cy + radius * 0.7f, cx + radius * 1.8f, cy + radius * 1.8f, paint);
+            paint.setStyle(Paint.Style.FILL);
+        }
+
+        private void drawSpotlightPattern(Canvas canvas, int left, int top, int right, int bottom) {
+            int width = right - left;
+            int height = bottom - top;
+            paint.setStyle(Paint.Style.FILL);
+            for (int i = 0; i < 3; i++) {
+                float cx = left + width * (0.22f + i * 0.28f);
+                float beamTop = top + dp(14);
+                float beamBottom = bottom - dp(12);
+                android.graphics.Path beam = new android.graphics.Path();
+                beam.moveTo(cx, beamTop);
+                beam.lineTo(cx - width * 0.16f, beamBottom);
+                beam.lineTo(cx + width * 0.16f, beamBottom);
+                beam.close();
+                paint.setColor(Color.argb(34 + i * 10, 255, 255, 220));
+                canvas.drawPath(beam, paint);
+                paint.setColor(Color.argb(70, 255, 255, 245));
+                canvas.drawCircle(cx, beamTop + dp(8), dp(9), paint);
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(dp(2));
+                paint.setColor(Color.argb(80, 255, 255, 245));
+                canvas.drawOval(cx - dp(30), beamBottom - dp(14), cx + dp(30), beamBottom + dp(6), paint);
+                paint.setStyle(Paint.Style.FILL);
+            }
         }
 
         private void drawLogoTileBackplate(Canvas canvas, Tile tile, int left, int top, int right, int bottom, boolean hot) {
